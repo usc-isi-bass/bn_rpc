@@ -1,6 +1,11 @@
-bnrepl
+bn_rpc
 ----
 
-This plugin allows you to run your Binary Ninja Python console in a real terminal window, and adds tab completion.
+This plugin allows you to run python scripts using BinaryNinja Python API outside its IDE.   
+Forked from [bnrepl](https://github.com/lunixbochs/bnrepl), which provides an interactive shell outside IDE.
 
-Clone this repo into your BN plugins dir and run `client.py` in a terminal while the BN app is running.
+# Instructions
+- Clone this repo into your Binary Ninja plugins directory.
+- Run Binary Ninja in another window.
+- Use ```$ python bn_rpc.py <your script>``` to run your script.
+

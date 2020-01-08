@@ -1,35 +1,26 @@
-import atexit
 import json
 import os
-import readline
-import rlcompleter
 import socket
 import sys
+
+if len(sys.argv) != 2:
+    print("Usage: python bn_rpyc.py <script>")
+    exit(1)
+
+script = sys.argv[1]
+if os.path.exists(script):
+    script = os.path.abspath(script)
+else:
+    print("Can't find: %s" % script)
+    exit(1)
 
 py3 = sys.version_info[0] >= 3
 if not py3:
     input = raw_input
 
-libedit = 'libedit' in readline.__doc__
-if libedit:
-    readline.parse_and_bind('bind ^I rl_complete')
-else:
-    readline.parse_and_bind('tab: complete')
-    readline.parse_and_bind('set completion-ignore-case on')
-    readline.parse_and_bind('set show-all-if-ambiguous on')
-
-histfile = os.path.expanduser('~/.bn_repl_history')
-if os.path.exists(histfile):
-    try:
-        readline.read_history_file(histfile)
-    except IOError:
-        pass
-    readline.set_history_length(1000)
-
-atexit.register(readline.write_history_file, histfile)
 
 s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-s.connect(os.path.expanduser('~/.bn_repl.sock'))
+s.connect(os.path.expanduser('~/.bn_rpc.sock'))
 if py3:
     sin = s.makefile('r', buffering=1, encoding='utf8')
 else:
@@ -45,31 +36,27 @@ def recv():
         line = line.decode('utf8')
     return json.loads(line)
 
-def complete(text, state):
-    if not text:
-        readline.insert_text('    ')
-        return None
-    send('complete', text=text, state=state)
-    text = recv()['text']
-    return text
-
-readline.set_completer(complete)
-
+done = False
 while True:
     m = recv()
     cmd = m['cmd']
     if cmd == 'prompt':
+        if done:
+            s.shutdown(socket.SHUT_RDWR)
+            break
         prompt = m['prompt']
         try:
-            line = input(prompt)
+            line = "exec(open(\"%s\").read())" % script
             send('input', text=line + '\n')
         except KeyboardInterrupt:
             send('reset')
         except EOFError:
             s.shutdown(socket.SHUT_RDWR)
             break
+        done = True
     elif cmd == 'print':
         print(m['text'].rstrip('\n'))
     elif cmd == 'exit':
         break
 print
+
