@@ -20,7 +20,7 @@ if not py3:
 
 
 s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-s.connect(os.path.expanduser('~/.bn_rpc.sock'))
+s.connect('/home/bnnj/.bn_rpc.sock')
 if py3:
     sin = s.makefile('r', buffering=1, encoding='utf8')
 else:

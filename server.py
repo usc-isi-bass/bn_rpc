@@ -145,6 +145,7 @@ if os.path.exists(path):
     os.unlink(path)
 socketserver.UnixStreamServer.allow_reuse_address = True
 server = socketserver.UnixStreamServer(path, InteractiveServer)
+os.system("chmod 777 %s" % path)
 t = threading.Thread(target=server.serve_forever)
 t.daemon = True
 t.start()
